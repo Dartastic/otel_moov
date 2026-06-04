@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_moov_suppression.dart';
 
@@ -52,48 +51,61 @@ Future<T> tracedMoov<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_moov');
   final span = t.startSpan('moov $operation', kind: SpanKind.client);
   try {
-    span.setStringAttribute('rpc.system', 'moov');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('rpc.system', 'moov')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.accountId != null) {
-        span.setStringAttribute('moov.account.id', res.accountId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('moov.account.id', res.accountId!)]));
       }
       if (res.counterpartyId != null) {
-        span.setStringAttribute('moov.counterparty.id', res.counterpartyId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('moov.counterparty.id', res.counterpartyId!)
+        ]));
       }
       if (res.transferId != null) {
-        span.setStringAttribute('moov.transfer.id', res.transferId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('moov.transfer.id', res.transferId!)]));
       }
       if (res.paymentMethod != null) {
-        span.setStringAttribute('moov.payment_method', res.paymentMethod!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('moov.payment_method', res.paymentMethod!)]));
       }
       if (res.rail != null) {
-        span.setStringAttribute('moov.rail', res.rail!);
+        span.addAttributes(
+            OTel.attributes([OTel.attributeString('moov.rail', res.rail!)]));
       }
       if (res.amount != null) {
-        span.setDoubleAttribute('moov.amount', res.amount!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeDouble('moov.amount', res.amount!)]));
       }
       if (res.currency != null) {
-        span.setStringAttribute('moov.currency', res.currency!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('moov.currency', res.currency!)]));
       }
       if (res.status != null) {
-        span.setStringAttribute('moov.status', res.status!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('moov.status', res.status!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('moov.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('moov.error.code', res.errorCode!)]));
       }
-      final fail =
-          res.errorCode != null ||
+      final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-          ErrorResource.errorType.key,
-          res.errorCode ?? 'moov.error',
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            ErrorResource.errorType.key,
+            res.errorCode ?? 'moov.error',
+          )
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
